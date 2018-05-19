@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "500522495960",
+    "firebase_url": "https://grad-project-b7e4f.firebaseio.com",
+    "project_id": "grad-project-b7e4f",
+    "storage_bucket": "grad-project-b7e4f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:500522495960:android:b3124e737eaeac9c",
+        "android_client_info": {
+          "package_name": "com.example.jhyun_000.fcmtest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "500522495960-6k15o5i1vqojbfmg5b9q92suj2ase4rc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArTYPUtD52mSn1E8uXLnKGuRiMQcOaGxA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
