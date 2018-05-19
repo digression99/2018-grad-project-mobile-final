@@ -39,7 +39,7 @@ import static com.example.jhyun_000.fcmtest.EmailPasswordActivity.user_email;
 //import com.google.firebase.iid.FirebaseInstanceId;
 //import com.google.firebase.iid.FirebaseInstanceId;
 
-
+//2018_0519 7:06 test hyun
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Token";
     String token;
