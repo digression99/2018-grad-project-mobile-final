@@ -77,9 +77,14 @@
         </activity>
 
 
-        <activity
-            android:name=".TimerActionActivity"
-            android:label="@string/app_name" />
+        <!--<activity-->
+            <!--android:name=".TimerActionActivity"-->
+            <!--android:label="@string/app_name" />-->
+
+        <activity android:name=".TimerActionActivity"
+            android:launchMode="singleInstance" android:excludeFromRecents="true"
+            android:taskAffinity="" android:theme="@style/Theme.AppCompat.Dialog">
+        </activity>
 
         <service android:name=".GPS_Service" />
         <service android:name=".Timer" />

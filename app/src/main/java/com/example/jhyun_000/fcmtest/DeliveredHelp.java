@@ -1,10 +1,14 @@
 package com.example.jhyun_000.fcmtest;
 
+import android.app.AlertDialog;
 import android.app.FragmentManager;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -19,6 +23,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
+import static com.example.jhyun_000.fcmtest.Constants.server_url_accept_help;
+import static com.example.jhyun_000.fcmtest.EmailPasswordActivity.user_email;
+
 /**
  * Created by jhyun_000 on 2018-04-17.
  */
@@ -27,17 +40,21 @@ public class DeliveredHelp extends AppCompatActivity implements OnMapReadyCallba
     Button button_ok;
     Button button_cancel;
     MapView mapView;
-    Double latitude;
-    Double longitude;
+    String requestedEmail="";
+    Double latitude = 37.56;
+    Double longitude = 126.97;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_help);
 
-//        Bundle bundle = getIntent().getExtras();
-//        latitude = (Double) bundle.get("latitude");
-//        longitude = (Double) bundle.get("longitude");
+        if(savedInstanceState != null) {
+            Bundle bundle = getIntent().getExtras();
+            requestedEmail = (String) bundle.get("requestedEmail");
+            latitude = (Double) bundle.get("lat");
+            longitude = (Double) bundle.get("lng");
+        }
 
         init();
     }
@@ -53,7 +70,24 @@ public class DeliveredHelp extends AppCompatActivity implements OnMapReadyCallba
             @Override
             public void onClick(View v) {
                 //send server 내가 도움 줄거라는걸
+                JSONObject jobject = new JSONObject();
+                try {
+                    jobject.put("requestedEmail", requestedEmail);
+                    jobject.put("acceptedEmail", user_email);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                CallRequestHttp callRequestHttp = new CallRequestHttp();
+                String json = jobject.toString();
 
+                Log.i("Help", "json : "+json);
+                try {
+                    String response = callRequestHttp.execute(server_url_accept_help, json).get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -76,7 +110,7 @@ public class DeliveredHelp extends AppCompatActivity implements OnMapReadyCallba
     @Override
     public void onMapReady(GoogleMap googleMap) {
 //        latitude, longitude 순서
-        LatLng helpLocation = new LatLng(37.56, 126.97);
+        LatLng helpLocation = new LatLng(latitude, longitude);
 
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(helpLocation);
@@ -103,5 +137,52 @@ public class DeliveredHelp extends AppCompatActivity implements OnMapReadyCallba
         googleMap.getUiSettings().setMyLocationButtonEnabled(true);
         googleMap.getUiSettings().setScrollGesturesEnabled(true);
         googleMap.getUiSettings().setMapToolbarEnabled(true);
+    }
+
+
+    public class CallRequestHttp extends AsyncTask<String, String, String> {
+        RequestHttp requestHttp;
+//        String json = "{\"email\": \"" + user_email + "\", \"duration\": " + 3600 * 24 * 7 * 1000 + "}";
+        String response;
+
+        @Override
+        protected void onPreExecute() {
+            requestHttp = new RequestHttp();
+        }
+
+        @Override
+        protected String doInBackground(String... url) {
+            String res = null;
+            try {
+                res = requestHttp.post(url[0], url[1]);
+                Log.i("ResponseHelp", res);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return res;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            response = s;
+            Log.i("Response-postexecute-help", s);
+            Log.i("Response-postexecute-help-response", response);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(DeliveredHelp.this);
+
+            builder.setMessage("요청 수락 완료")
+                    .setTitle("요청 수락 완료")
+                    .setNegativeButton("확인", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //다이얼로그를 취소한다
+                            dialog.cancel();
+                        }
+                    });
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+
     }
 }

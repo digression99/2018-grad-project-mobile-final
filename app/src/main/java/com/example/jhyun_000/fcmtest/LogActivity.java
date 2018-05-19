@@ -20,6 +20,7 @@ import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.Response;
 
+import static com.example.jhyun_000.fcmtest.Constants.server_url_log;
 import static com.example.jhyun_000.fcmtest.EmailPasswordActivity.user_email;
 
 /**
@@ -149,18 +150,6 @@ public class LogActivity extends AppCompatActivity {
         String json = "{\"email\": \"" + user_email + "\", \"duration\": " + 3600 * 24 * days * 1000 + "}";
         String response;
         int ok = 0;
-//        @Override
-//        public void run() {
-//            try {
-//                response = requestHttp.post("https://grad-project-app.herokuapp.com/user/logs", json);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        public String getResponse(){
-//            return response;
-//        }
 
         @Override
         protected void onPreExecute() {
@@ -172,7 +161,7 @@ public class LogActivity extends AppCompatActivity {
         protected String doInBackground(String... url) {
             String res = null;
             try {
-                res = requestHttp.post("https://grad-project-app.herokuapp.com/user/logs", json);
+                res = requestHttp.post(server_url_log, json);
                 Log.i("Response", res);
             } catch (IOException e) {
                 e.printStackTrace();

@@ -21,6 +21,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
+import static com.example.jhyun_000.fcmtest.Constants.server_url_blacklist_register;
 import static com.example.jhyun_000.fcmtest.EmailPasswordActivity.user_email;
 
 
@@ -159,7 +160,7 @@ public class ImageAdapter extends ArrayAdapter {
                 RequestBody body = RequestBody.create(JSON, "{\"uuid\": \"" + uuid + "\", \"reason\" : \"" + reasons + "\"}");
 
                 Request request = new Request.Builder()
-                        .url("https://grad-project-app.herokuapp.com/user/blacklist-register")
+                        .url(server_url_blacklist_register)
                         .post(body)
                         .build();
 

@@ -2,12 +2,8 @@ package com.example.jhyun_000.fcmtest;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,14 +28,13 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
 
+import static com.example.jhyun_000.fcmtest.Constants.server_url_emergency;
 import static com.example.jhyun_000.fcmtest.EmailPasswordActivity.user_email;
 
 //import com.google.firebase.iid.FirebaseInstanceId;
 //import com.google.firebase.iid.FirebaseInstanceId;
 
-//2018_0519 7:06 test hyun
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Token";
     String token;
@@ -232,15 +227,8 @@ public class MainActivity extends AppCompatActivity {
         button_emergecy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent(MainActivity.this, GPS_Service.class);
-//                startService(intent);
-//
-//                isEmergency = true;
-
                 Intent intent = new Intent(MainActivity.this, EmergencyActivity.class);
                 startActivity(intent);
-
-//                sendEmergency("ddd@gmail.com");
             }
         });
 
@@ -335,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Body : " + body);
 
                 Request request = new Request.Builder()
-                        .url("https://pure-depths-50816.herokuapp.com/user/emergency")
+                        .url(server_url_emergency)
                         .post(body)
                         .build();
 
@@ -348,114 +336,45 @@ public class MainActivity extends AppCompatActivity {
         }.start();
     }
 
-    void sendEmergency(final String email) {
-        Toast.makeText(MainActivity.this, "Emerg longitude : " + String.valueOf(longitude) + "latitude : " + String.valueOf(latitude), Toast.LENGTH_SHORT).show();
-
-        Cursor cursor = myDBHandler.findAll();
-        String Jsonarray = "{\"email\": \"" + email + "\"," +
-                "\"current_location\": {\"longitude\": " + longitude + ", \"latitude\": " + latitude + "}, ";
-        if (cursor.moveToFirst()) {
-//            String longitude = cursor.getString(1);
-//            String latitude = cursor.getString(2);
-            double longitude = cursor.getDouble(1);
-            double latitude = cursor.getDouble(2);
-
-            Jsonarray += "\"locations\":[ " + "{\"longitude\": " + longitude + ", \"latitude\": " + latitude + "}";
-        }
-
-        while (cursor.moveToNext()) {
-//            cursor.getString(0);
-//            String longitude = cursor.getString(1);
-//            String latitude = cursor.getString(2);
-            double longitude = cursor.getDouble(1);
-            double latitude = cursor.getDouble(2);
-            Log.i("cursor", "longitude is : " + longitude + " latitude is : " + latitude);
-//            if (longitude != null && latitude != null)
-            Jsonarray += ", {\"longitude\" : " + longitude + ", \"latitude\": " + latitude + "}";
-        }
-        Jsonarray += "]}";
-
-        Log.d("Jsonarray", Jsonarray);
-
-        //이걸 server로 보내야함
-        final String finalJsonarray = Jsonarray;
-        new Thread() {
-            public void run() {
-                OkHttpClient client = new OkHttpClient();
-
-                RequestBody body = RequestBody.create(JSON, finalJsonarray);
-                Log.d(TAG, "Emergency Body : " + body);
-
-                Request request = new Request.Builder()
-//                        .url("http://grad-project-app.herokuapp.com/user/emergency")
-                        .url(getString(R.string.server_url_emergency))
-                        .post(body)
-                        .build();
-
-//                try {
-//                    client.newCall(request).execute();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-
-                Response response = null;
-                try {
-                    response = client.newCall(request).execute();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                try {
-                    Log.d("Response", response.body().string());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }.start();
-        Log.d("Jsonarray", Jsonarray);
-    }
-
-
-    private BroadcastReceiver broadcastReceiver;
+//    private BroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onResume() {
         PermissionCheck();
 
         super.onResume();
-        if (broadcastReceiver == null) {
-            broadcastReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-
-                    textView.append("\n" + intent.getExtras().get("longitude") + " " + intent.getExtras().get("latitude"));
-                    Log.d("broadcast: longitude", String.valueOf(intent.getExtras().get("longitude")));
-                    Log.d("broadcast: latitude", String.valueOf(intent.getExtras().get("latitude")));
-
-                    longitude = (double) intent.getExtras().get("longitude");
-                    latitude = (double) intent.getExtras().get("latitude");
-
-                    Toast.makeText(MainActivity.this, "BC longitude : " + String.valueOf(longitude) + "latitude : " + String.valueOf(latitude), Toast.LENGTH_SHORT).show();
-
-                    if (isEmergency) {
-                        isEmergency = false;
-                        sendEmergency(user_email);
-                        Intent i = new Intent(MainActivity.this, GPS_Service.class);
-                        stopService(i);
-                    }
-                }
-            };
-        }
-        registerReceiver(broadcastReceiver, new IntentFilter("location_update"));
+//        if (broadcastReceiver == null) {
+//            broadcastReceiver = new BroadcastReceiver() {
+//                @Override
+//                public void onReceive(Context context, Intent intent) {
+//
+//                    textView.append("\n" + intent.getExtras().get("longitude") + " " + intent.getExtras().get("latitude"));
+//                    Log.d("broadcast: longitude", String.valueOf(intent.getExtras().get("longitude")));
+//                    Log.d("broadcast: latitude", String.valueOf(intent.getExtras().get("latitude")));
+//
+//                    longitude = (double) intent.getExtras().get("longitude");
+//                    latitude = (double) intent.getExtras().get("latitude");
+//
+//                    Toast.makeText(MainActivity.this, "BC longitude : " + String.valueOf(longitude) + "latitude : " + String.valueOf(latitude), Toast.LENGTH_SHORT).show();
+//
+//                    if (isEmergency) {
+//                        isEmergency = false;
+//                        sendEmergency(user_email);
+//                        Intent i = new Intent(MainActivity.this, GPS_Service.class);
+//                        stopService(i);
+//                    }
+//                }
+//            };
+//        }
+//        registerReceiver(broadcastReceiver, new IntentFilter("location_update"));
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (broadcastReceiver != null) {
-            unregisterReceiver(broadcastReceiver);
-        }
+//        if (broadcastReceiver != null) {
+//            unregisterReceiver(broadcastReceiver);
+//        }
     }
 
     private void PermissionCheck() {

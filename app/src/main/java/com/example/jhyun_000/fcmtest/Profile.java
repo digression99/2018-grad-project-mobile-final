@@ -18,6 +18,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
+import static com.example.jhyun_000.fcmtest.Constants.server_url_profile;
 import static com.example.jhyun_000.fcmtest.EmailPasswordActivity.user_email;
 
 /**
@@ -128,7 +129,7 @@ public class Profile extends AppCompatActivity {
 
         CallRequestHttp callRequestHttp = new CallRequestHttp();
         String json = "{\"email\": \"" + user_email + "\", \"duration\": " + 0 + "}";
-        response = callRequestHttp.execute("https://grad-project-app.herokuapp.com/user/profile", json).get();
+        response = callRequestHttp.execute(server_url_profile, json).get();
 
         Log.i("Response", response);
         return response;
@@ -230,7 +231,7 @@ public class Profile extends AppCompatActivity {
         String json = object.toString();
         Log.i("Json", json);
 
-        response = updateHttp.execute("https://grad-project-app.herokuapp.com/user/profile", json).get();
+        response = updateHttp.execute(server_url_profile, json).get();
 
         Log.i("Response", response);
         return response;

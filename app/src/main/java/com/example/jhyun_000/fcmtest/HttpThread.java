@@ -8,6 +8,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
+import static com.example.jhyun_000.fcmtest.Constants.server_url_log;
+
 /**
  * Created by jhyun_000 on 2018-04-16.
  */
@@ -34,7 +36,7 @@ public class HttpThread extends Thread {
         Log.d("sendLogHttp", "Body : " + body);
 
         Request request = new Request.Builder()
-                .url("https://grad-project-app.herokuapp.com/user/logs")
+                .url(server_url_log)
                 .post(body)
                 .build();
 

@@ -20,12 +20,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+
+import static com.example.jhyun_000.fcmtest.Constants.server_url_user_register;
 
 public class EmailPasswordActivity extends BaseActivity implements
         View.OnClickListener {
@@ -262,13 +267,24 @@ public class EmailPasswordActivity extends BaseActivity implements
         //기존 okhttp
         new Thread() {
             public void run() {
+                JSONObject jobject = new JSONObject();
+                try {
+                    jobject.put("email", email);
+                    jobject.put("password", password);
+                    jobject.put("token", token);
+                    jobject.put("countryCode", "+82");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                String json = jobject.toString();
+//                "{\"email\": \"" + email + "\", \"password\": \"" + password + "\", \"token\": \"" + token + "\"}"
                 OkHttpClient client = new OkHttpClient();
-                RequestBody body = RequestBody.create(JSON,
-                        "{\"email\": \"" + email + "\", \"password\": \"" + password + "\", \"token\": \"" + token + "\"}");
+                RequestBody body = RequestBody.create(JSON, json);
                 Log.d(TAG, "Body : " + body);
 
                 Request request = new Request.Builder()
-                        .url(getString(R.string.server_url_user_register))
+                        .url(server_url_user_register)
                         .post(body)
                         .build();
 
@@ -280,8 +296,5 @@ public class EmailPasswordActivity extends BaseActivity implements
             }
         }.start();
 
-//        RequestHttp requestHttp = new RequestHttp();
-//        String json = "{\"email\": \"" + email + "\", \"password\": \"" + password + "\", \"token\": \"" + token + "\"}";
-//        String response = requestHttp.post(getString(R.string.server_url_user_register), json);
     }
 }

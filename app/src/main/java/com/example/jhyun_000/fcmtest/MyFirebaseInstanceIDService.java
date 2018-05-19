@@ -14,6 +14,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
+import static com.example.jhyun_000.fcmtest.Constants.server_url_emergency;
+
 
 public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
@@ -57,7 +59,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
                 Log.d(TAG, "Body : " + body);
 
                 Request request = new Request.Builder()
-                        .url("https://pure-depths-50816.herokuapp.com/user/emergency")
+                        .url(server_url_emergency)
                         .post(body)
                         .build();
 

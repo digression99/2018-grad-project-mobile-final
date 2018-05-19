@@ -72,7 +72,6 @@ public class Timer extends Service {
         Intent intent = new Intent(Timer.this, TimerActionActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(Timer.this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-
         Notification notification = new Notification.Builder(getApplicationContext())
                 .setContentTitle("Timer")
                 .setContentText("Timer")

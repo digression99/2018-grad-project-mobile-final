@@ -16,6 +16,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import okhttp3.MediaType;
@@ -24,6 +28,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import static com.example.jhyun_000.fcmtest.Constants.server_url_emergency;
 import static com.example.jhyun_000.fcmtest.EmailPasswordActivity.user_email;
 
 /**
@@ -60,7 +65,6 @@ public class EmergencyActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(EmergencyActivity.this, GPS_Service.class);
                 startService(intent);
-
                 isEmergency = true;
             }
         });
@@ -78,7 +82,6 @@ public class EmergencyActivity extends AppCompatActivity {
                 @Override
                 public void onReceive(Context context, Intent intent) {
 
-//                    textView.append("\n" + intent.getExtras().get("longitude") + " " + intent.getExtras().get("latitude"));
                     Log.d("broadcast: longitude", String.valueOf(intent.getExtras().get("longitude")));
                     Log.d("broadcast: latitude", String.valueOf(intent.getExtras().get("latitude")));
 
@@ -108,30 +111,61 @@ public class EmergencyActivity extends AppCompatActivity {
         Toast.makeText(EmergencyActivity.this, "Emerg longitude : " + String.valueOf(longitude) + "latitude : " + String.valueOf(latitude), Toast.LENGTH_SHORT).show();
 
         Cursor cursor = myDBHandler.findAll();
-        String Jsonarray = "{\"email\": \"" + email + "\"," +
-                "\"current_location\": {\"longitude\": " + longitude + ", \"latitude\": " + latitude + "}, ";
+        JSONObject jobject = new JSONObject();
+        try {
+            jobject.put("email", email);
+
+            JSONObject current_location = new JSONObject();
+            current_location.put("longitude", longitude);
+            current_location.put("latitude", latitude);
+            jobject.put("current_location", current_location);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        JSONArray locations = new JSONArray();
         if (cursor.moveToFirst()) {
-//            String longitude = cursor.getString(1);
-//            String latitude = cursor.getString(2);
             double longitude = cursor.getDouble(1);
             double latitude = cursor.getDouble(2);
 
-            Jsonarray += "\"locations\":[ " + "{\"longitude\": " + longitude + ", \"latitude\": " + latitude + "}";
+            JSONObject location = new JSONObject();
+            try{
+                location.put("longitude", longitude);
+                location.put("latitude", latitude);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            locations.put(location);
         }
 
         while (cursor.moveToNext()) {
             double longitude = cursor.getDouble(1);
             double latitude = cursor.getDouble(2);
             Log.i("Emergency", "longitude is : " + longitude + " latitude is : " + latitude);
-//            if (longitude != null && latitude != null)
-            Jsonarray += ", {\"longitude\" : " + longitude + ", \"latitude\": " + latitude + "}";
-        }
-        Jsonarray += "]}";
 
-        Log.i("Emergency", "Jsonarray:" + Jsonarray);
+            JSONObject location = new JSONObject();
+            try{
+                location.put("longitude", longitude);
+                location.put("latitude", latitude);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            locations.put(location);
+            try {
+                jobject.put("locations", locations);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        String Jsonarray_nice = jobject.toString();
+        Log.i("Emergency", "Jsonarray:" + Jsonarray_nice);
 
         //이걸 server로 보내야함
-        final String finalJsonarray = Jsonarray;
+        final String finalJsonarray = Jsonarray_nice;
         new Thread() {
             public void run() {
                 OkHttpClient client = new OkHttpClient();
@@ -140,8 +174,7 @@ public class EmergencyActivity extends AppCompatActivity {
                 Log.i("Emergency", "Emergency Body : " + body);
 
                 Request request = new Request.Builder()
-//                        .url("http://grad-project-app.herokuapp.com/user/emergency")
-                        .url(getString(R.string.server_url_emergency))
+                        .url(server_url_emergency)
                         .post(body)
                         .build();
 
@@ -161,10 +194,7 @@ public class EmergencyActivity extends AppCompatActivity {
             }
         }.start();
 
-//        RequestHttp requestHttp = new RequestHttp();
-//        String response = requestHttp.post("http://grad-project-app.herokuapp.com/user/emergency", Jsonarray);
-        Log.i("Emergency", "Jsonarray :" + Jsonarray);
-//        Log.i("Response", response );
+        Log.i("Emergency", "Jsonarray :" + Jsonarray_nice);
     }
 
     private void PermissionCheck() {
