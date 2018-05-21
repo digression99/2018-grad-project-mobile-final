@@ -4,6 +4,7 @@ package com.example.jhyun_000.fcmtest;
  * Created by jhyun_000 on 2018-04-01.
  */
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -30,6 +31,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
+import static com.example.jhyun_000.fcmtest.Constants.server_url_login;
 import static com.example.jhyun_000.fcmtest.Constants.server_url_user_register;
 
 public class EmailPasswordActivity extends BaseActivity implements
@@ -80,8 +82,19 @@ public class EmailPasswordActivity extends BaseActivity implements
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         updateUI(currentUser);
-        // Get token
-        user_token = FirebaseInstanceId.getInstance().getToken();
+
+        // 예외 처리가 없다.
+        if (currentUser != null){
+            user_token = FirebaseInstanceId.getInstance().getToken();
+
+            // startActivity() 로, 메인 액티비티를 띄워야 한다.
+            // finish();
+
+            Intent intent = new Intent(EmailPasswordActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
+
     }
     // [END on_start_check_user]
 
@@ -111,6 +124,14 @@ public class EmailPasswordActivity extends BaseActivity implements
                                 e.printStackTrace();
                             }
                             updateUI(user);
+
+
+                            // startActivity() 로, 메인 액티비티를 띄워야 한다.
+                            // finish();
+                            Intent intent = new Intent(EmailPasswordActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
+
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
@@ -118,6 +139,7 @@ public class EmailPasswordActivity extends BaseActivity implements
                                     Toast.LENGTH_SHORT).show();
                             updateUI(null);
                         }
+
 
                         // [START_EXCLUDE]
                         hideProgressDialog();
@@ -146,6 +168,23 @@ public class EmailPasswordActivity extends BaseActivity implements
                             FirebaseUser user = mAuth.getCurrentUser();
                             user_email = user.getEmail();
                             Log.i("user_email", user_email);
+
+                            // 서버로 email, client token을 보내야 한다.
+                            // 라우터는 /user/login 으로 보낸다.
+
+                            // startActivity() 로, 메인 액티비티를 띄워야 한다.
+                            // finish();
+                            user_token = FirebaseInstanceId.getInstance().getToken();
+                            try {
+                                sendTokenHttp(email, user_token);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            Intent intent = new Intent(EmailPasswordActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
+
                             updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
@@ -295,6 +334,37 @@ public class EmailPasswordActivity extends BaseActivity implements
                 }
             }
         }.start();
+    }
 
+
+    void sendTokenHttp(final String email, final String token) throws IOException {
+        new Thread() {
+            public void run() {
+                JSONObject jobject = new JSONObject();
+                try {
+                    jobject.put("email", email);
+                    jobject.put("token", token);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                String json = jobject.toString();
+
+                OkHttpClient client = new OkHttpClient();
+                RequestBody body = RequestBody.create(JSON, json);
+                Log.d(TAG, "Body : " + body);
+
+                Request request = new Request.Builder()
+                        .url(server_url_login)
+                        .post(body)
+                        .build();
+
+                try {
+                    client.newCall(request).execute();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 }

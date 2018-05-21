@@ -14,5 +14,6 @@ public class Constants {
     public static String server_url_log = "https://grad-project-app.herokuapp.com/user/logs";
     public static String server_url_profile = "https://grad-project-app.herokuapp.com/user/profile";
     public static String server_url_blacklist_register = "https://grad-project-app.herokuapp.com/user/blacklist-register";
+    public static String server_url_login = "https://grad-project-app.herokuapp.com/user/login";
 
 }

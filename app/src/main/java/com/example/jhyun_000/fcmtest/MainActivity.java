@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     Button profile_button;
     Button device_button;
     Button map_button;
+    Button logout_button;
 
     double longitude;
     double latitude;
@@ -297,6 +298,20 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, DeliveredHelp.class);
                 startActivity(intent);
+            }
+        });
+
+        logout_button = (Button)findViewById(R.id.logout_button);
+        logout_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAuth = FirebaseAuth.getInstance();
+                mAuth.signOut();
+
+                Intent intent = new Intent(MainActivity.this, EmailPasswordActivity.class);
+                startActivity(intent);
+                finish();
+
             }
         });
     }

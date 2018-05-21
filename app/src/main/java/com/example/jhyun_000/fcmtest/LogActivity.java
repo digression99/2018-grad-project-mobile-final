@@ -13,6 +13,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 import okhttp3.Call;
@@ -42,6 +44,7 @@ public class LogActivity extends AppCompatActivity {
     String timestamp[];
     String urls[];
     String result[];
+    String newDateString[];
 
     HttpThread okhttpThread;
 
@@ -93,7 +96,8 @@ public class LogActivity extends AppCompatActivity {
             e.printStackTrace();
         } finally {
             if (return_parseResponse > 0) {
-                setGrid(imagePaths, timestamp, result);
+//                setGrid(imagePaths, timestamp, result);
+                setGrid(imagePaths, newDateString, result);
             }
         }
 
@@ -218,7 +222,7 @@ public class LogActivity extends AppCompatActivity {
         imagePaths = new String[length_jarray];
         timestamp = new String[length_jarray];
         result = new String[length_jarray];
-
+        newDateString = new String[length_jarray];
 
         String urls[] = new String[Jarray.length()];
 
@@ -228,6 +232,32 @@ public class LogActivity extends AppCompatActivity {
             imagePaths[i] = object.getString("key");
 //            timestamp[i] = object.getString("timestamp");
             timestamp[i] = String.valueOf(object.getLong("timestamp"));
+
+            Log.i("newDate", "time stamp [ " + i + " ] is : " + timestamp[i]);
+            Log.i("newDate", "imagePaths [ " + i + " ] is : " + imagePaths[i]);
+
+            String NEW_FORMAT = "yyyy-MM-dd hh:mm:ss.SSS";
+
+            SimpleDateFormat formatter = new SimpleDateFormat(NEW_FORMAT);
+
+//            newDateString[i] = formatter.format(d).toString();
+//            Log.i("newDate", newDateString[i]);
+
+//                Timestamp tsp = new Timestamp(object.getLong("timestamp"));
+//                Date parsedDate = formatter.parse(String.valueOf(tsp.getTime()));
+
+//                Date d = new Date(object.getLong("timestamp")*1000);
+                Date d = new Date(object.getLong("timestamp"));
+                formatter.format(d);
+
+
+//                newDateString[i] = formatter.format(d);
+                newDateString[i] = formatter.format(d).toString();
+
+                Log.i("newDate", newDateString[i]);
+
+
+
             result[i] = object.getString("result");
 //            if(object.getString("result").equals("unknown")){
 //                image_location[i] = 1;
@@ -259,29 +289,4 @@ public class LogActivity extends AppCompatActivity {
         log_gridView.setAdapter(new ImageAdapter2(this, imagePaths, timestamp, result));
 //        @NonNull Context context, @NonNull String[] imageUuids, @Nullable String[] timestamp, @NonNull int[] uuid_location
     }
-
-//    public class MyAsyncTask extends AsyncTask<String, Void, String> {
-//
-//        @Override
-//        protected String doInBackground(String... strings) {
-//            return null;
-//        }
-//
-//        @Override
-//        protected void onPreExecute() {
-//            super.onPreExecute();
-//            okhttpThread = new HttpThread(callback, user_email);
-//            okhttpThread.start();
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String s) {
-//            super.onPostExecute(s);
-//            Log.i("onStartUuid", uuid[0]);
-//
-////            handler.removeMessages(1);
-//            setGrid(uuid, timestamp, image_location);
-//        }
-//
-//    }
 }

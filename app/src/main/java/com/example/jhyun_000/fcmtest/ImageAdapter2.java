@@ -107,7 +107,23 @@ public class ImageAdapter2 extends ArrayAdapter {
 //        textView.setText(imageUrls[position]);
         textViewTimestamp.setText(String.valueOf(position));
         if (timestamp != null) {
+
             textViewTimestamp.setText(timestamp[position]);
+
+//            String NEW_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+//            String newDateString;
+//
+//            SimpleDateFormat  formatter = new SimpleDateFormat(NEW_FORMAT);
+//            try {
+//                Date parsedDate = formatter.parse(timestamp[position]);
+//                textViewTimestamp.setText((CharSequence) parsedDate);
+//            } catch (ParseException e) {
+//                e.printStackTrace();
+//            }
+
+
+
+
         }
 
         textViewResult.setText(result[position]);
