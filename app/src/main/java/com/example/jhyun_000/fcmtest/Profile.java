@@ -18,6 +18,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
+import static com.example.jhyun_000.fcmtest.Constants.server_url_check_address;
+import static com.example.jhyun_000.fcmtest.Constants.server_url_device_register;
 import static com.example.jhyun_000.fcmtest.Constants.server_url_profile;
 import static com.example.jhyun_000.fcmtest.EmailPasswordActivity.user_email;
 
@@ -29,14 +31,19 @@ public class Profile extends AppCompatActivity {
     EditText edit_password;
     EditText edit_protector_phone;
     EditText edit_protector_name;
+    EditText edit_address;
 
     Button button_profile;
     int length_jarray;
     String password;
     String protector_name;
     String protector_number;
+    String deviceId;
+    String address;
 
-
+    EditText edit_deviceNumber;
+    Button button_device;
+    Button button_address;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -90,6 +97,56 @@ public class Profile extends AppCompatActivity {
         });
 
         //PUt /user/profile
+
+
+        edit_deviceNumber = (EditText) findViewById(R.id.edit_deviceNumber);
+        button_device = (Button) findViewById(R.id.button_device);
+
+        button_device.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String deviceId = edit_deviceNumber.getText().toString();
+
+//                 response = callRequestHttp.execute("https://grad-project-app.herokuapp.com/user/profile", json).get();
+//                디바이스 등록 주소 : 원래 주소 + /device/device-register
+//                "https://grad-project-app.herokuapp.com/device/device-register"
+
+                JSONObject jobject = new JSONObject();
+                try {
+                    jobject.put("email", user_email);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    jobject.put("deviceId", deviceId);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                String json = jobject.toString();
+                CallRequestHttp callRequestHttp = new CallRequestHttp();
+                try {
+                    String response = callRequestHttp.execute(server_url_device_register, json).get();
+                    Log.i("Response", "deviceRegister: " + response);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        edit_address = (EditText)findViewById(R.id.edit_address);
+        button_address = (Button)findViewById(R.id.button_address);
+        button_address.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String address = edit_address.getText().toString();
+
+                checkAddress(address);
+
+            }
+        });
     }
 
     public class CallRequestHttp extends AsyncTask<String, String, String> {
@@ -116,10 +173,22 @@ public class Profile extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String s) {
-//            super.onPostExecute(s);
-            response = s;
-            Log.i("Response-postexecute-s", s);
-            Log.i("Response-postexecute-response", response);
+            Log.i("Response-postexecute-response", s);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(Profile.this);
+
+            builder.setMessage("전송 완료")
+                    .setTitle("수정 완료")
+                    .setNegativeButton("확인", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //다이얼로그를 취소한다
+                            dialog.cancel();
+                        }
+                    });
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
     }
 
@@ -136,8 +205,8 @@ public class Profile extends AppCompatActivity {
     }
 
     public class UpdateHttp extends AsyncTask<String, String, String> {
-        RequestHttp requestHttp;
-        String response;
+            RequestHttp requestHttp;
+            String response;
 
         @Override
         protected void onPreExecute() {
@@ -172,12 +241,11 @@ public class Profile extends AppCompatActivity {
 //            super.onPostExecute(s);
             response = s;
             Log.i("Update-postexecute-s", s);
-            Log.i("Update-postexecute-response", response);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(Profile.this);
 
             builder.setMessage("전송 완료")
-                    .setTitle("프로필 수정")
+                    .setTitle("수정 완료")
                     .setNegativeButton("확인", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -219,7 +287,9 @@ public class Profile extends AppCompatActivity {
         if (protector_phone != null) {
 //            if(!protector_phone.equals(null)){
             protector.put("phoneNumber", protector_phone);
+            protector.put("countryCode", "+82");
         }
+
 
         if (protector != null) {
             data.put("protector", protector);
@@ -282,7 +352,15 @@ public class Profile extends AppCompatActivity {
             String phoneNumber = mobile.getString("phoneNumber");
         }
 
-        Log.i("Response", "password2 : " + password);
+        if(Jobject.has("deviceId") && !Jobject.isNull("deviceId")){
+            String deviceId = Jobject.getString("deviceId");
+            edit_deviceNumber.setHint(deviceId);
+        }
+        if(Jobject.has("address") && !Jobject.isNull("address")){
+            String address = Jobject.getString("address");
+            edit_address.setHint(address);
+        }
+
         edit_password.setHint(password);
         edit_protector_phone.setHint(protector_number);
         edit_protector_name.setHint(protector_name);
@@ -290,4 +368,106 @@ public class Profile extends AppCompatActivity {
         return length_jarray;
     }
 
+    int checkAddress(String address){
+
+//        /user/address-check
+
+        JSONObject jobject = new JSONObject();
+        try {
+            jobject.put("email", user_email);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            jobject.put("address", address);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String json = jobject.toString();
+
+        CheckAddressHttp checkAddressHttp = new CheckAddressHttp();
+        try {
+            String response = checkAddressHttp.execute(server_url_check_address, json).get();
+            Log.i("AddressResponse", response);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+
+        return 0;
+
+    }
+
+    public class CheckAddressHttp extends AsyncTask<String, String, String> {
+        RequestHttp requestHttp;
+        String response;
+
+        @Override
+        protected void onPreExecute() {
+            requestHttp = new RequestHttp();
+        }
+
+        @Override
+        protected String doInBackground(String... url) {
+            String res = null;
+            try {
+                res = requestHttp.post(url[0], url[1]);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return res;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+//            super.onProgressUpdate(values);
+            //progressdialog보다 progressbar 추천
+            ProgressDialog dialog = new ProgressDialog(Profile.this);
+            dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            dialog.setMessage("확인 중");
+            dialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            response = s;
+            Log.i("AddressPost", s);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(Profile.this);
+
+            try {
+                JSONObject jobject = new JSONObject(s);
+                if(jobject.has("error")){
+                    builder.setMessage("유효한 주소가 아닙니다. 주소를 다시 입력해주세요")
+                            .setTitle("주소 검증 결과")
+                            .setNegativeButton("확인", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //다이얼로그를 취소한다
+                                    dialog.cancel();
+                                }
+                            });
+                }else{
+                    builder.setMessage("주소 검증이 완료되었습니다")
+                            .setTitle("주소 검증 완료")
+                            .setNegativeButton("확인", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //다이얼로그를 취소한다
+                                    dialog.cancel();
+                                }
+                            });
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+             AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+    }
 }
+
+

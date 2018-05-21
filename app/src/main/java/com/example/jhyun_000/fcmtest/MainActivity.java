@@ -9,13 +9,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -44,31 +41,21 @@ public class MainActivity extends AppCompatActivity {
     int REQUEST_COARSE = 2;
     int REQUEST_INTERNET = 3;
 
-    Button button_gps;
     Button button_timer_start;
     Button button_timer_end;
     Button button_emergecy;
-    TextView textView;
+
     EditText timer_expire_edittext;
     EditText timer_interval_edittext;
-    Button login_page_button;
     Button face_register_page_button;
     Button log_button;
-    //    Button button_visitor;
     Button profile_button;
-    Button device_button;
     Button map_button;
     Button logout_button;
 
-    double longitude;
-    double latitude;
-
-    boolean isEmergency = false;
     MyDBHandler myDBHandler;
     SQLiteDatabase db;
 
-    public int timer_expire;
-    public int timer_interval;
 
     private FirebaseAuth mAuth;
 
@@ -84,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
         db = myDBHandler.getWritableDatabase();
 
         mAuth = FirebaseAuth.getInstance();
+
+        PermissionCheck();
 
     }
 
@@ -120,94 +109,24 @@ public class MainActivity extends AppCompatActivity {
         //
         // Handle possible data accompanying notification message.
         // [START handle_data_extras]
-        if (getIntent().getExtras() != null) {
-            for (String key : getIntent().getExtras().keySet()) {
-                Object value = getIntent().getExtras().get(key);
-                Log.d(TAG, "Key: " + key + " Value: " + value);
-            }
 
-            //
-            String num1 = getIntent().getExtras().get("num1").toString();
-            TextView main_nt_textview = (TextView) findViewById(R.id.main_nt_textview);
-            main_nt_textview.setText(num1);
-        }
         // [END handle_data_extras]
     }
 
     void findviews() {
-        button_gps = (Button) findViewById(R.id.button_gps);
-        button_gps.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, GPS_Service.class);
-                startService(i);
-            }
-        });
-
-        Button logTokenButton = findViewById(R.id.logTokenButton);
-        logTokenButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendTokenHttp();
-            }
-        });
-
         timer_expire_edittext = (EditText) findViewById(R.id.timer_expire_edittext);
         timer_interval_edittext = (EditText) findViewById(R.id.timer_interval_edittext);
-
-        timer_expire_edittext.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//                start 지점에서 시작되는 count 갯수만큼의 글자들이 after 길이만큼의 글자로 대치되려고 할 때 호출된다
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                start 지점에서 시작되는 before 갯수만큼의 글자들이 count 갯수만큼의 글자들로 대치되었을 때 호출된다
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-//                EditText의 텍스트가 변경되면 호출된다
-                String str = s.toString();
-                if (str.length() > 0) {
-                    timer_expire = Integer.valueOf(str);
-                    button_timer_start.setEnabled(true);
-                } else {
-                    button_timer_start.setEnabled(false);
-                }
-            }
-        });
-
-        timer_interval_edittext.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//                start 지점에서 시작되는 count 갯수만큼의 글자들이 after 길이만큼의 글자로 대치되려고 할 때 호출된다
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                start 지점에서 시작되는 before 갯수만큼의 글자들이 count 갯수만큼의 글자들로 대치되었을 때 호출된다
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-//                EditText의 텍스트가 변경되면 호출된다
-                String str = s.toString();
-                if (str.length() > 0) {
-                    timer_interval = Integer.valueOf(str);
-                    button_timer_start.setEnabled(true);
-                } else {
-                    button_timer_start.setEnabled(false);
-                }
-            }
-        });
 
         button_timer_start = (Button) findViewById(R.id.button_timer_start);
         button_timer_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int expire_time = Integer.parseInt(timer_expire_edittext.getText().toString());
+                int interval_time = Integer.parseInt(timer_interval_edittext.getText().toString());
+
                 Intent intent = new Intent(MainActivity.this, Timer.class);
+                intent.putExtra("expire_time", expire_time);
+                intent.putExtra("interval_time", interval_time);
                 startService(intent);
             }
         });
@@ -233,17 +152,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        textView = (TextView) findViewById(R.id.textView);
-        login_page_button = (Button) findViewById(R.id.login_page_button);
         face_register_page_button = (Button) findViewById(R.id.face_register_page_button);
-
-        login_page_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, EmailPasswordActivity.class);
-                startActivity(intent);
-            }
-        });
 
         face_register_page_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -283,15 +192,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        device_button = (Button) findViewById(R.id.device_button);
-        device_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, DeviceRegister.class);
-                startActivity(intent);
-            }
-        });
-
         map_button = (Button) findViewById(R.id.map_button);
         map_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -311,18 +211,13 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, EmailPasswordActivity.class);
                 startActivity(intent);
                 finish();
-
             }
         });
     }
 
     void sendTokenHttp() {
-        // Get token
         token = FirebaseInstanceId.getInstance().getToken();
 
-        //Nexus 5X 26 token: eEkA4fDyEKQ:APA91bG6wK8W4hu2BjJoTMpPPWAZakySNVpSEHF4OJLHayJxKgo1pt30YO29SKH9w_hqZbbSD21K6zgTaP7rg7PJinmBz4vxIGUbmeMTYP6Kt7XqFDe9iUA0mbjdLfPi1tcV832KBUsa
-
-        // Log and toast
         String msg = getString(R.string.msg_token_fmt, token);
         Log.d(TAG, msg);
         Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
@@ -349,47 +244,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }.start();
-    }
-
-//    private BroadcastReceiver broadcastReceiver;
-
-    @Override
-    protected void onResume() {
-        PermissionCheck();
-
-        super.onResume();
-//        if (broadcastReceiver == null) {
-//            broadcastReceiver = new BroadcastReceiver() {
-//                @Override
-//                public void onReceive(Context context, Intent intent) {
-//
-//                    textView.append("\n" + intent.getExtras().get("longitude") + " " + intent.getExtras().get("latitude"));
-//                    Log.d("broadcast: longitude", String.valueOf(intent.getExtras().get("longitude")));
-//                    Log.d("broadcast: latitude", String.valueOf(intent.getExtras().get("latitude")));
-//
-//                    longitude = (double) intent.getExtras().get("longitude");
-//                    latitude = (double) intent.getExtras().get("latitude");
-//
-//                    Toast.makeText(MainActivity.this, "BC longitude : " + String.valueOf(longitude) + "latitude : " + String.valueOf(latitude), Toast.LENGTH_SHORT).show();
-//
-//                    if (isEmergency) {
-//                        isEmergency = false;
-//                        sendEmergency(user_email);
-//                        Intent i = new Intent(MainActivity.this, GPS_Service.class);
-//                        stopService(i);
-//                    }
-//                }
-//            };
-//        }
-//        registerReceiver(broadcastReceiver, new IntentFilter("location_update"));
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-//        if (broadcastReceiver != null) {
-//            unregisterReceiver(broadcastReceiver);
-//        }
     }
 
     private void PermissionCheck() {

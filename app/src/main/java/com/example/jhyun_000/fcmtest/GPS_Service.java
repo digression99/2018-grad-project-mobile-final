@@ -48,6 +48,7 @@ public class GPS_Service extends Service {
         registerLocationManager();
         Log.d("Service", "service onCreate");
 
+
     }
 
     private void registerLocationManager() {

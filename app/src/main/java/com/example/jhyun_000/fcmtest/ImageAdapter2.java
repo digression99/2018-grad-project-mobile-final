@@ -130,7 +130,7 @@ public class ImageAdapter2 extends ArrayAdapter {
 //        GlideApp.with();
 
 //        imageView.setImageResource(R.drawable.firebase_lockup_400);
-        imageView.getLayoutParams().height = 300;
+        imageView.getLayoutParams().height = 500;
         imageView.getLayoutParams().width = 400;
         Glide.with(context)
                 .load(imageUrls[position])

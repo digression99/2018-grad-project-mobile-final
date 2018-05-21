@@ -89,7 +89,7 @@ public class EmailPasswordActivity extends BaseActivity implements
 
             // startActivity() 로, 메인 액티비티를 띄워야 한다.
             // finish();
-
+            Log.i("Token", user_token);
             Intent intent = new Intent(EmailPasswordActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
@@ -175,6 +175,7 @@ public class EmailPasswordActivity extends BaseActivity implements
                             // startActivity() 로, 메인 액티비티를 띄워야 한다.
                             // finish();
                             user_token = FirebaseInstanceId.getInstance().getToken();
+                            Log.i("Token", user_token);
                             try {
                                 sendTokenHttp(email, user_token);
                             } catch (IOException e) {

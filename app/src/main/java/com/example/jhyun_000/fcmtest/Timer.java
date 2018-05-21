@@ -8,11 +8,21 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
+import static com.example.jhyun_000.fcmtest.Constants.server_url_timer;
+import static com.example.jhyun_000.fcmtest.EmailPasswordActivity.user_email;
 
 /**
  * Created by jhyun_000 on 2018-02-23.
@@ -22,20 +32,35 @@ public class Timer extends Service {
     public static CountDownTimer countDownTimer;
     NotificationManager mNotificationManager;
 
+//    minute 분
+    int expire_time;
+    int interval_time;
+
+    //startService :  onCreate()->onStartCommand()-> onDestroy()
+    //bindService : onCreate()->onBind()-> onUnbind()-> onDestroy()
     @Override
     public void onCreate() {
-
         super.onCreate();
-
         Log.d("Timer", "OnCreate");
-        registerTimer();
-        countDownTimer.start();
-
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Bundle bundle = intent.getExtras();
+        expire_time = (int) bundle.get("expire_time");
+        interval_time = (int) bundle.get("interval_time");
 
-    private void registerTimer() {
-        countDownTimer = new CountDownTimer(1000000, 4000) {
+        registerTimer(interval_time, expire_time);
+        countDownTimer.start();
+
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void registerTimer(int interval, int expire) {
+//        countDownTimer = new CountDownTimer(1000000, 4000) {
+//        milis second = 1/1000 sec
+
+        countDownTimer = new CountDownTimer(expire*1000*60, interval*1000*60) {
             @Override
             public void onTick(long millisUntilFinished) {
                 Log.d("Timer", String.valueOf(millisUntilFinished));
@@ -45,6 +70,21 @@ public class Timer extends Service {
             @Override
             public void onFinish() {
 //                sendMsgToActivity(longitude, latitude);\
+
+//              서버로 만료 전송
+//                server_url_timer
+
+                JSONObject Jobject = new JSONObject();
+                try {
+                    Jobject.put("email", user_email);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                String json = Jobject.toString();
+                CallRequestHttp callRequestHttp = new CallRequestHttp();
+                callRequestHttp.execute(server_url_timer,json);
+
                 MyDBHandler dbHandler = new MyDBHandler(getApplicationContext(), null, null, 1);
                 dbHandler.deleteAll();
             }
@@ -100,4 +140,44 @@ public class Timer extends Service {
         countDownTimer.cancel();
         Log.d("Timer", "timer canceled");
     }
+}
+
+ class CallRequestHttp extends AsyncTask<String, String, String> {
+    RequestHttp requestHttp;
+
+    @Override
+    protected void onPreExecute() {
+        requestHttp = new RequestHttp();
+    }
+
+    @Override
+    protected String doInBackground(String... url) {
+        String res = null;
+        try {
+            res = requestHttp.post(url[0], url[1]);
+            Log.i("Response", res);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    @Override
+    protected void onPostExecute(String s) {
+        Log.i("Response-postexecute", s);
+
+//        AlertDialog.Builder builder = new AlertDialog.Builder();
+//        builder.setMessage("주소 검증이 완료되었습니다")
+//                .setTitle("주소 검증 완료")
+//                .setNegativeButton("확인", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        //다이얼로그를 취소한다
+//                        dialog.cancel();
+//                    }
+//                });
+//        AlertDialog dialog = builder.create();
+//        dialog.show();
+    }
+
 }

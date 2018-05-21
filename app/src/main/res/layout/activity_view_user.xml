@@ -13,6 +13,7 @@
         android:text="귀가알림을 해제하세요" />
 
     <ImageView
+        android:id="@+id/imageView_alarm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

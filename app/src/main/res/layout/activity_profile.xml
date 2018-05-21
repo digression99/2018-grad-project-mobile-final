@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -59,11 +60,40 @@
             android:ems="10" />
     </LinearLayout>
 
+
+
     <Button
         android:id="@+id/button_profile"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="UPDATE" />
+
+    <EditText
+        android:id="@+id/edit_deviceNumber"
+        android:layout_width="374dp"
+        android:layout_height="wrap_content"
+        android:hint="Device Number" />
+
+    <Button
+        android:id="@+id/button_device"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SEND" />
+
+    <EditText
+        android:id="@+id/edit_address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="집 주소 입력"/>
+    <!--android:inputType="textPostalAddress"-->
+
+    <Button
+        android:id="@+id/button_address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:text="주소 검증하기"/>
 
 
 </LinearLayout>

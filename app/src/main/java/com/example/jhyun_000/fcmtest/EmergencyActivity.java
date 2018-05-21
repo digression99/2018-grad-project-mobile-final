@@ -116,8 +116,11 @@ public class EmergencyActivity extends AppCompatActivity {
             jobject.put("email", email);
 
             JSONObject current_location = new JSONObject();
-            current_location.put("longitude", longitude);
-            current_location.put("latitude", latitude);
+//            current_location.put("longitude", longitude);
+//            current_location.put("latitude", latitude);
+
+            current_location.put("longitude", String.valueOf(longitude));
+            current_location.put("latitude", String.valueOf(latitude));
             jobject.put("current_location", current_location);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -129,10 +132,15 @@ public class EmergencyActivity extends AppCompatActivity {
             double longitude = cursor.getDouble(1);
             double latitude = cursor.getDouble(2);
 
+
             JSONObject location = new JSONObject();
             try{
-                location.put("longitude", longitude);
-                location.put("latitude", latitude);
+//                location.put("longitude", longitude);
+//                location.put("latitude", latitude);
+
+
+                location.put("longitude", String.valueOf(longitude));
+                location.put("latitude", String.valueOf(latitude));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -147,8 +155,11 @@ public class EmergencyActivity extends AppCompatActivity {
 
             JSONObject location = new JSONObject();
             try{
-                location.put("longitude", longitude);
-                location.put("latitude", latitude);
+//                location.put("longitude", longitude);
+//                location.put("latitude", latitude);
+
+                location.put("longitude", String.valueOf(longitude));
+                location.put("latitude", String.valueOf(latitude));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
