@@ -4,7 +4,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
+        <EditText
+            android:id="@+id/editText_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minEms="5"
+            android:hint="보고싶은 날짜 일 수" />
+
+        <Button
+            android:id="@+id/button_log_date"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="OK" />
+
+    </LinearLayout>
     <GridView
         android:id="@+id/log_gridView"
         android:layout_width="wrap_content"

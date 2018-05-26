@@ -4,9 +4,11 @@ import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -14,10 +16,10 @@ import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -40,16 +42,18 @@ public class DeliveredHelp extends AppCompatActivity implements OnMapReadyCallba
     Button button_ok;
     Button button_cancel;
     MapView mapView;
-    String requestedEmail="";
+    String requestedEmail = "";
     Double latitude = 37.56;
     Double longitude = 126.97;
+
+    private GoogleMap mMap;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_help);
 
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             Bundle bundle = getIntent().getExtras();
             requestedEmail = (String) bundle.get("requestedEmail");
             latitude = (Double) bundle.get("lat");
@@ -80,7 +84,7 @@ public class DeliveredHelp extends AppCompatActivity implements OnMapReadyCallba
                 CallRequestHttp callRequestHttp = new CallRequestHttp();
                 String json = jobject.toString();
 
-                Log.i("Help", "json : "+json);
+                Log.i("Help", "json : " + json);
                 try {
                     String response = callRequestHttp.execute(server_url_accept_help, json).get();
                 } catch (InterruptedException e) {
@@ -107,36 +111,77 @@ public class DeliveredHelp extends AppCompatActivity implements OnMapReadyCallba
         });
     }
 
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
+//        GoogleMapOptions options = new GoogleMapOptions();
+//        options.mapType(GoogleMap.MAP_TYPE_NORMAL)
+//                .compassEnabled(true)
+//                .zoomControlsEnabled(true)
+//                .zoomGesturesEnabled(true);
+//
+//        googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+//
+//        UiSettings uiSettings = googleMap.getUiSettings();
+//        uiSettings.setMyLocationButtonEnabled(true);
+//        uiSettings.setMapToolbarEnabled(true);
+//        uiSettings.setZoomGesturesEnabled(true);
+//        uiSettings.setScrollGesturesEnabled(true);
+//
+////        latitude, longitude 순서
+//        LatLng helpLocation = new LatLng(latitude, longitude);
+//        MarkerOptions markerOptions = new MarkerOptions();
+//        markerOptions.position(helpLocation)
+//                .title("HELP")
+//                .snippet("도움 바람");
+////        markerOptions.draggable(true);
+//        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+//
+//        Marker marker = googleMap.addMarker(markerOptions);
+//
+//        marker.showInfoWindow();
+//
+//        googleMap.moveCamera(CameraUpdateFactory.newLatLng(helpLocation));
+
+        mMap = googleMap;
+
+        UiSettings mUiSettings = mMap.getUiSettings();
+
+        // Keep the UI Settings state in sync with the checkboxes.
+        mUiSettings.setZoomControlsEnabled(true);
+        mUiSettings.setCompassEnabled(true);
+        mUiSettings.setMyLocationButtonEnabled(true);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mMap.setMyLocationEnabled(true);
+        mUiSettings.setScrollGesturesEnabled(true);
+        mUiSettings.setZoomGesturesEnabled(true);
+        mUiSettings.setTiltGesturesEnabled(true);
+        mUiSettings.setRotateGesturesEnabled(true);
+
 //        latitude, longitude 순서
         LatLng helpLocation = new LatLng(latitude, longitude);
-
         MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(helpLocation);
-        markerOptions.title("HELP");
-        markerOptions.snippet("도움 바람");
+        markerOptions.position(helpLocation)
+                .title("HELP")
+                .snippet("도움 바람");
 //        markerOptions.draggable(true);
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 
-        Marker marker = googleMap.addMarker(markerOptions);
+        Marker marker = mMap.addMarker(markerOptions);
 
         marker.showInfoWindow();
 
-        GoogleMapOptions options = new GoogleMapOptions();
-        options.mapType(GoogleMap.MAP_TYPE_NORMAL)
-                .compassEnabled(true)
-                .zoomControlsEnabled(true)
-                .zoomGesturesEnabled(true);
-
-
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(helpLocation));
-        googleMap.animateCamera(CameraUpdateFactory.zoomTo(20));
-
-        googleMap.getUiSettings().setZoomGesturesEnabled(true);
-        googleMap.getUiSettings().setMyLocationButtonEnabled(true);
-        googleMap.getUiSettings().setScrollGesturesEnabled(true);
-        googleMap.getUiSettings().setMapToolbarEnabled(true);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(helpLocation));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(18));
     }
 
 

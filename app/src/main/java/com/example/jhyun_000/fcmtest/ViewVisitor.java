@@ -25,6 +25,9 @@ public class ViewVisitor extends AppCompatActivity {
     String result;
     ImageView imageView;
     TextView text_result;
+    TextView text_reason;
+    int uuid_position;      //0인경우 사용자, 친구 ,unknown  / 1인 경우 blacklist
+    String reason="";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,11 +38,11 @@ public class ViewVisitor extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         uuids = (String) bundle.get("uuids");
         result = (String) bundle.get("result");
-        int uuid_position = 0; //0인경우 사용자, 친구 / 1인 경우 unknown
 
-        if (result.equals("unknown")) {
-            uuid_position = 1;
+        if(bundle.containsKey("reason")){
+            reason = (String)bundle.get("reason");
         }
+         uuid_position = 0;
 
         init();
         getImageFromS3(user_email, uuids, uuid_position);
@@ -52,12 +55,20 @@ public class ViewVisitor extends AppCompatActivity {
 //        gridView.setAdapter(new ImageAdapter(this, uuids, null));
 
         text_result = (TextView) findViewById(R.id.text_result);
+        text_reason = (TextView) findViewById(R.id.text_reason);
         imageView = (ImageView) findViewById(R.id.imageView);
 
         if (result.equals("unknown")) {
             text_result.setText("외부인입니다");
-        } else {
+            uuid_position = 0;
+        } else if(result.equals("blacklist")){
+            text_result.setText("위험인물 입니다");
+            text_reason.setText(reason);
+            uuid_position = 1;
+
+        }else{
             text_result.setText(result);
+            uuid_position = 0;
         }
 
 
@@ -71,10 +82,12 @@ public class ViewVisitor extends AppCompatActivity {
         if (position == 0) {
             url = "https://s3.amazonaws.com/androidprojectapp-userfiles-mobilehub-1711223959/" +
                     email_changed + "/user/" + uuid + ".jpg";
-        } else if (position == 1) {
-            url = "https://s3.amazonaws.com/androidprojectapp-userfiles-mobilehub-1711223959/" +
-                    email_changed + "/detected/" + uuid + ".jpg";
+        } else if (position == 1) {     //blacklist
+            url = "https://s3.amazonaws.com/androidprojectapp-userfiles-mobilehub-1711223959/"
+                    +email_changed + "/detected/" + uuid + ".jpg";
         }
+
+
 
 ////        Picasso
 //        Glide.with(this)

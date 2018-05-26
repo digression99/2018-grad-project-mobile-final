@@ -69,23 +69,19 @@
         </activity>
 
 
-        <activity android:name=".ShowAcceptList">
-            <intent-filter>
-                <action android:name="SHOW_ACCEPT_LIST" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
 
         <!--<activity-->
             <!--android:name=".TimerActionActivity"-->
             <!--android:label="@string/app_name" />-->
-
         <activity android:name=".TimerActionActivity"
             android:launchMode="singleInstance" android:excludeFromRecents="true"
             android:taskAffinity="" android:theme="@style/Theme.AppCompat.Dialog">
         </activity>
 
+        <activity android:name=".ShowAcceptList"
+            android:launchMode="singleInstance" android:excludeFromRecents="true"
+            android:taskAffinity="" android:theme="@style/Theme.AppCompat.Dialog">
+        </activity>
         <service android:name=".GPS_Service" />
         <service android:name=".Timer" />
 

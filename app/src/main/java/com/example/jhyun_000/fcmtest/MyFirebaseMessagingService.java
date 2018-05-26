@@ -69,6 +69,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 String uuid = remoteMessage.getData().get("uuid");
                 String result = remoteMessage.getData().get("result");
 
+                if(remoteMessage.getData().containsKey("reason")){
+                    String reason = remoteMessage.getData().get("reason");
+                    intent.putExtra("reason", reason);
+                }
+
                 intent.putExtra("uuids", uuid);
                 intent.putExtra("result", result);
                 startActivity(intent);
@@ -89,6 +94,16 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 intent.putExtra("lng", longitude);
                 startActivity(intent);
             }
+
+            else if (remoteMessage.getNotification().getTag().toString().equals("SHOW_ACCEPT_HELP")) {       //도움요청 옴
+                String acceptedEmail = remoteMessage.getData().get("acceptedEmail");
+
+                Intent intent = new Intent(this, ShowAcceptList.class);
+
+                intent.putExtra("acceptedEmail", acceptedEmail);
+                startActivity(intent);
+            }
+
 
             if (/* Check if data needs to be processed by long running job */ true) {
                 // For long-running tasks (10 seconds or more) use Firebase Job Dispatcher.

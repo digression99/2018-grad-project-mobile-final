@@ -3,6 +3,7 @@ package com.example.jhyun_000.fcmtest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -12,11 +13,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+
+import okhttp3.Response;
 
 import static com.example.jhyun_000.fcmtest.Constants.server_url_check_address;
 import static com.example.jhyun_000.fcmtest.Constants.server_url_device_register;
@@ -44,6 +49,7 @@ public class Profile extends AppCompatActivity {
     EditText edit_deviceNumber;
     Button button_device;
     Button button_address;
+    Button button_delete;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -144,9 +150,138 @@ public class Profile extends AppCompatActivity {
                 String address = edit_address.getText().toString();
 
                 checkAddress(address);
-
             }
         });
+
+        button_delete = (Button)findViewById(R.id.button_delete);
+        button_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JSONObject jobject = new JSONObject();
+                try {
+                    jobject.put("email", user_email);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                String json = jobject.toString();
+                DeleteHttp deleteHttp = new DeleteHttp();
+                try {
+//                    String response = deleteHttp.execute(server_url_profile, json).get();
+                    Response response = deleteHttp.execute(server_url_profile, json).get();
+                    Log.i("Response", "delete: " + response);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    public class DeleteHttp extends AsyncTask<String, Response, Response> {
+        RequestHttp requestHttp;
+        String response;
+
+        @Override
+        protected void onPreExecute() {
+            requestHttp = new RequestHttp();
+        }
+
+        @Override
+        protected Response doInBackground(String... url) {
+            String res = null;
+            Response response = null;
+            try {
+//                res = requestHttp.deleteResponse(url[0], url[1]);
+                response = requestHttp.deleteResponse(url[0], url[1]);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return response;
+        }
+
+        @Override
+        protected void onProgressUpdate(Response... values) {
+//            super.onProgressUpdate(values);
+            //progressdialog보다 progressbar 추천
+            ProgressDialog dialog = new ProgressDialog(Profile.this);
+            dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            dialog.setMessage("전송 중");
+            dialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(Response s) {
+//            super.onPostExecute(s);
+            try {
+                response = s.body().string();
+                Log.i("Update-postexecute-s", response);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(Profile.this);
+
+            if(s.code() / 100 == 2) {
+                builder.setMessage("회원 정보가 삭제되었습니다.")
+                        .setTitle("전송 완료")
+                        .setNegativeButton("확인", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //다이얼로그를 취소한다
+                                dialog.cancel();
+
+                                FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                                mAuth.signOut();
+                                Intent intent = new Intent(Profile.this, EmailPasswordActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        });
+            }else{
+                builder.setMessage("회원 정보가 삭제 중 오류발생하였습니다")
+                        .setTitle("삭제 도중 오류")
+                        .setNegativeButton("확인", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //다이얼로그를 취소한다
+                                dialog.cancel();
+                            }
+                        });
+            }
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+    }
+
+    public class NoDialogHttp extends AsyncTask<String, String, String> {
+        RequestHttp requestHttp;
+        String response;
+
+        @Override
+        protected void onPreExecute() {
+            requestHttp = new RequestHttp();
+        }
+
+        @Override
+        protected String doInBackground(String... url) {
+            String res = null;
+            int count = url.length;
+            try {
+                res = requestHttp.post(url[0], url[1]);
+                Log.i("Response", res);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return res;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            Log.i("Response-postexecute-response", s);
+        }
     }
 
     public class CallRequestHttp extends AsyncTask<String, String, String> {
@@ -192,13 +327,12 @@ public class Profile extends AppCompatActivity {
         }
     }
 
-
     String requestProfile(final String email) throws IOException, ExecutionException, InterruptedException {
         String response;
 
-        CallRequestHttp callRequestHttp = new CallRequestHttp();
+        NoDialogHttp noDialogHttp = new NoDialogHttp();
         String json = "{\"email\": \"" + user_email + "\", \"duration\": " + 0 + "}";
-        response = callRequestHttp.execute(server_url_profile, json).get();
+        response = noDialogHttp.execute(server_url_profile, json).get();
 
         Log.i("Response", response);
         return response;
@@ -389,7 +523,9 @@ public class Profile extends AppCompatActivity {
         CheckAddressHttp checkAddressHttp = new CheckAddressHttp();
         try {
             String response = checkAddressHttp.execute(server_url_check_address, json).get();
+//            Response response = checkAddressHttp.execute(server_url_check_address, json).get();
             Log.i("AddressResponse", response);
+//            Log.i("AddressResponse", response.body().toString());
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -433,15 +569,17 @@ public class Profile extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String s) {
-            response = s;
-            Log.i("AddressPost", s);
+            String res = null;
+            res = s;
+                Log.i("AddressPost", s);
+
 
             AlertDialog.Builder builder = new AlertDialog.Builder(Profile.this);
 
             try {
                 JSONObject jobject = new JSONObject(s);
-                if(jobject.has("error")){
-                    builder.setMessage("유효한 주소가 아닙니다. 주소를 다시 입력해주세요")
+                    if(jobject.has("error")){
+                        builder.setMessage("유효한 주소가 아닙니다. 주소를 다시 입력해주세요")
                             .setTitle("주소 검증 결과")
                             .setNegativeButton("확인", new DialogInterface.OnClickListener() {
                                 @Override
@@ -450,24 +588,27 @@ public class Profile extends AppCompatActivity {
                                     dialog.cancel();
                                 }
                             });
-                }else{
-                    builder.setMessage("주소 검증이 완료되었습니다")
-                            .setTitle("주소 검증 완료")
-                            .setNegativeButton("확인", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    //다이얼로그를 취소한다
-                                    dialog.cancel();
-                                }
-                            });
+                }else {
+                        builder.setMessage("주소 검증이 완료되었습니다")
+                                .setTitle("주소 검증 완료")
+                                .setNegativeButton("확인", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        //다이얼로그를 취소한다
+                                        dialog.cancel();
+                                    }
+                                });
+                    }
                 }
-            } catch (JSONException e) {
+             catch (JSONException e) {
                 e.printStackTrace();
             }
-             AlertDialog dialog = builder.create();
+            AlertDialog dialog = builder.create();
             dialog.show();
         }
+
     }
 }
+
 
 

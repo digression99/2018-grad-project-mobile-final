@@ -1,6 +1,9 @@
 package com.example.jhyun_000.fcmtest;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -9,17 +12,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import static com.example.jhyun_000.fcmtest.Constants.server_url_blacklist_register;
 import static com.example.jhyun_000.fcmtest.EmailPasswordActivity.user_email;
@@ -109,24 +115,9 @@ public class ImageAdapter2 extends ArrayAdapter {
         if (timestamp != null) {
 
             textViewTimestamp.setText(timestamp[position]);
-
-//            String NEW_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-//            String newDateString;
-//
-//            SimpleDateFormat  formatter = new SimpleDateFormat(NEW_FORMAT);
-//            try {
-//                Date parsedDate = formatter.parse(timestamp[position]);
-//                textViewTimestamp.setText((CharSequence) parsedDate);
-//            } catch (ParseException e) {
-//                e.printStackTrace();
-//            }
-
-
-
-
         }
 
-        textViewResult.setText(result[position]);
+        textViewResult.setText(result[position]+" ");
 //        GlideApp.with();
 
 //        imageView.setImageResource(R.drawable.firebase_lockup_400);
@@ -141,33 +132,138 @@ public class ImageAdapter2 extends ArrayAdapter {
         button_blacklist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendBlackList(imagePath[position], "그냥");
+
+                final EditText editText = new EditText(getContext());
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+                builder.setMessage("블랙리스트에 추가할 이유를 적어주세요")
+                        .setTitle("블랙리스트 추가하기")
+                        .setView(editText)
+                        .setPositiveButton("전송", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String reason = editText.getText().toString();
+                                sendBlackList(imagePath[position], reason);
+                                dialog.cancel();
+                            }
+                        })
+                        .setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //다이얼로그를 취소한다
+                                dialog.cancel();
+                            }
+                        });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
             }
         });
         return convertView;
     }
 
-    void sendBlackList(final String uuid, final String reasons) {
-        new Thread() {
-            public void run() {
-                OkHttpClient client = new OkHttpClient();
-//                     RequestBody body = new FormBody.Builder()
-//                             .add("Token", FirebaseInstanceId.getInstance().getToken())
-//                             .build();
+    void sendBlackList(final String key, final String reasons) {
+//        new Thread() {
+//            public void run() {
+//                OkHttpClient client = new OkHttpClient();
+//
+//                RequestBody body = RequestBody.create(JSON, "{\"uuid\": \"" + uuid + "\", \"reason\" : \"" + reasons + "\"}");
+//
+//                Request request = new Request.Builder()
+//                        .url(server_url_blacklist_register)
+//                        .post(body)
+//                        .build();
+//
+//                try {
+//                    client.newCall(request).execute();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }.start();
 
-                RequestBody body = RequestBody.create(JSON, "{\"uuid\": \"" + uuid + "\", \"reason\" : \"" + reasons + "\"}");
 
-                Request request = new Request.Builder()
-                        .url(server_url_blacklist_register)
-                        .post(body)
-                        .build();
+        JSONObject object = new JSONObject();
+        try {
+            object.put("email", user_email);
+            object.put("key", key);
+            object.put("reason", reasons);
+        }catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-                try {
-                    client.newCall(request).execute();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        String json = object.toString();
+        Log.i("adapter", "json : "+json);
+
+        BlackListHttp blackListHttp = new BlackListHttp();
+        try {
+            Response response = blackListHttp.execute(server_url_blacklist_register,json).get();
+            Log.i("blacklist", "response : "+response.body().toString());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+
+    public class BlackListHttp extends AsyncTask<String, String, Response> {
+        RequestHttp requestHttp;
+        String response;
+
+
+        @Override
+        protected void onPreExecute() {
+            requestHttp = new RequestHttp();
+        }
+
+        @Override
+        protected Response doInBackground(String... url) {
+//            String res = null;
+            Response response = null;
+            try {
+                response = requestHttp.postResponse(url[0], url[1]);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        }.start();
+            return response;
+        }
+
+        @Override
+        protected void onPostExecute(Response res) {
+            Log.i("BlackList", res.body().toString());
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+            //http status code
+            if(res.code()/100 == 2) {           //정상
+                builder.setMessage("블랙리스트에 해당 이유로 등록되었습니다")
+                        .setTitle("전송 완료")
+                        .setNegativeButton("확인", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //다이얼로그를 취소한다
+                                dialog.cancel();
+                            }
+                        });
+            }
+
+            else{           //오류
+                builder.setMessage("에러발생으로 등록이 되지 않았습니다")
+                        .setTitle("오류")
+                        .setNegativeButton("확인", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //다이얼로그를 취소한다
+                                dialog.cancel();
+                            }
+                        });
+            }
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
     }
 }

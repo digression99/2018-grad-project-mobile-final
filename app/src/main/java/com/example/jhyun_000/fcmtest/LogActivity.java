@@ -6,6 +6,9 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
 
 import org.json.JSONArray;
@@ -33,6 +36,8 @@ import static com.example.jhyun_000.fcmtest.EmailPasswordActivity.user_email;
 public class LogActivity extends AppCompatActivity {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     GridView log_gridView;
+    EditText editText_date;
+    Button button_log_date;
 
     Response response;
     String resp_string;
@@ -49,6 +54,7 @@ public class LogActivity extends AppCompatActivity {
     HttpThread okhttpThread;
 
     Handler handler;
+    int days = 7;
 
     //순서 : okhttp log요청 -> callback 통해서 parseresponse -> setGrid
     @Override
@@ -57,6 +63,34 @@ public class LogActivity extends AppCompatActivity {
         setContentView(R.layout.activity_log);
 
         log_gridView = (GridView) findViewById(R.id.log_gridView);
+        editText_date = (EditText)findViewById(R.id.editText_date);
+        button_log_date = (Button)findViewById(R.id.button_log_date);
+        button_log_date.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(editText_date.getText() != null) {
+                    days = Integer.parseInt(editText_date.getText().toString());
+                }
+
+                int return_parseResponse = 0;
+                try {
+                    return_parseResponse = parseResponse(sendLogHttp(user_email));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (return_parseResponse > 0) {
+//                setGrid(imagePaths, timestamp, result);
+                        setGrid(imagePaths, newDateString, result);
+                    }
+                }
+            }
+        });
 
         callback = new Callback() {
             @Override
@@ -83,23 +117,7 @@ public class LogActivity extends AppCompatActivity {
 
         };
 
-        int return_parseResponse = 0;
-        try {
-            return_parseResponse = parseResponse(sendLogHttp(user_email));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } finally {
-            if (return_parseResponse > 0) {
-//                setGrid(imagePaths, timestamp, result);
-                setGrid(imagePaths, newDateString, result);
-            }
-        }
+
 
 //        try {
 //            okhttpThread.join();
@@ -148,7 +166,7 @@ public class LogActivity extends AppCompatActivity {
         //        duration mili second = 1/1000 초
 //        3600초 = 1시간
 //        3600* 24 = 1day
-        int days = 7;
+
 
         //        String json = "{\"email\": \"" + user_email + "\", \"duration\": " + 0 + "}";
         String json = "{\"email\": \"" + user_email + "\", \"duration\": " + 3600 * 24 * days * 1000 + "}";

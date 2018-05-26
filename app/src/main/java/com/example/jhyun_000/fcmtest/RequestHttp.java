@@ -39,4 +39,27 @@ public class RequestHttp {
         Response response = client.newCall(request).execute();
         return response.body().string();
     }
+
+
+    Response deleteResponse(String url, String json) throws IOException {
+        RequestBody body = RequestBody.create(JSON, json);
+        Log.i("http-requestbody", body.toString());
+        Request request = new Request.Builder()
+                .url(url)
+                .delete(body)
+                .build();
+        Response response = client.newCall(request).execute();
+        return response;
+    }
+
+    Response postResponse(String url, String json) throws IOException {
+        RequestBody body = RequestBody.create(JSON, json);
+        Log.i("http-requestbody", body.toString());
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        Response response = client.newCall(request).execute();
+        return response;
+    }
 }
